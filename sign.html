@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Podpisanie Umowy — Azzurro Luxury Boutique</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <style>
+    :root {
+      --blue: #1565C0;
+      --blue-light: #1976D2;
+      --blue-pale: #E3F2FD;
+      --gold: #B8860B;
+      --gold-bg: #FFF8E7;
+      --bg: #F8F9FA;
+      --surface: #FFFFFF;
+      --border: #E0E0E0;
+      --text: #1A1A2E;
+      --muted: #6B7280;
+      --success: #2E7D32;
+      --success-bg: #E8F5E9;
+      --error: #C62828;
+      --error-bg: #FFEBEE;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-logo {
+      width: 32px; height: 32px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+    .topbar-info { flex: 1; }
+    .topbar-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .topbar-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .btn-preview {
+      background: var(--gold-bg);
+      border: 1px solid rgba(184,134,11,0.3);
+      border-radius: 8px;
+      color: var(--gold);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-preview:hover { background: #FFF3CD; }
+
+    /* PROGRESS BAR */
+    .progress-bar {
+      background: var(--surface);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .progress-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .ps-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .ps-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .ps-circle.active {
+      background: var(--blue);
+      color: white;
+    }
+    .ps-circle.done {
+      background: var(--success);
+      color: white;
+    }
+    .ps-label {
+      font-size: 11px;
+      color: var(--muted);
+      transition: color 0.3s;
+    }
+    .ps-label.active { color: var(--blue); font-weight: 500; }
+    .ps-label.done { color: var(--success); }
+    .ps-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      margin: 0 8px;
+      transition: background 0.3s;
+    }
+    .ps-line.done { background: var(--success); }
+
+    /* MAIN CONTENT */
+    .content {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+    }
+
+    /* SECTIONS */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* FORM CARD */
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    .form-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-card h3 .icon {
+      width: 28px; height: 28px;
+      background: var(--blue-pale);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* FORM FIELDS */
+    .field {
+      margin-bottom: 16px;
+    }
+    .field:last-child { margin-bottom: 0; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    label .req { color: var(--blue); }
+    input, textarea, select {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(21,101,192,0.1);
+    }
+    input.filled { border-color: #81C784; }
+    input::placeholder, textarea::placeholder { color: #C0C0C0; font-size: 14px; }
+    textarea { resize: none; line-height: 1.6; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* INFO BOX */
+    .info-box {
+      background: var(--blue-pale);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 12px;
+      color: #1565C0;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+    }
+    .info-box .info-icon { font-size: 16px; flex-shrink: 0; }
+
+    /* GUEST ADD */
+    .guest-entry {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .guest-entry input { flex: 1; }
+    .btn-remove {
+      width: 36px; height: 36px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .btn-remove:hover { border-color: var(--error); color: var(--error); }
+    .btn-add-guest {
+      width: 100%;
+      background: none;
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 10px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-add-guest:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* VALIDATION BAR */
+    .validation-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+    .val-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .val-title { font-size: 13px; font-weight: 600; }
+    .val-count { font-size: 12px; color: var(--muted); }
+    .val-progress {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .val-fill {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+    .val-fill.complete { background: var(--success); }
+
+    /* MAIN BUTTON */
+    .btn-main {
+      width: 100%;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-main:active { transform: scale(0.98); }
+    .btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-main.green { background: var(--success); }
+    .btn-main.gold { background: var(--gold); }
+
+    /* ====== SIGNATURE SECTION ====== */
+    #section-sign {
+      text-align: center;
+    }
+    .sign-header {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .sign-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .sign-header p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .rotate-hint {
+      background: var(--gold-bg);
+      border: 1px solid rgba(184,134,11,0.25);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+    .rotate-hint.hidden { display: none; }
+
+    .canvas-wrapper {
+      background: var(--surface);
+      border: 2px solid var(--blue);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 12px;
+      position: relative;
+      cursor: crosshair;
+    }
+    #signatureCanvas {
+      display: block;
+      width: 100%;
+      touch-action: none;
+    }
+    .canvas-label {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--muted);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .canvas-label.signed { display: none; }
+
+    .sign-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn-clear {
+      flex: 1;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .btn-clear:hover { border-color: var(--error); color: var(--error); }
+
+    /* ====== DONE SECTION ====== */
+    .done-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      text-align: center;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .done-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .done-card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .done-card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .status-icon { font-size: 18px; }
+    .status-text { font-size: 13px; font-weight: 500; }
+    .status-sub { font-size: 11px; color: var(--muted); }
+    .status-item.pending { opacity: 0.5; }
+    .status-item.ok .status-icon::after { content: ' ✓'; font-size: 12px; color: var(--success); }
+    .status-item.loading .status-icon { animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ORIENTATION OVERLAY */
+    #orientationOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(21,101,192,0.97);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    #orientationOverlay.show { display: flex; }
+    #orientationOverlay .ov-icon { font-size: 64px; margin-bottom: 24px; animation: rotateHint 2s ease-in-out infinite; }
+    @keyframes rotateHint {
+      0%, 100% { transform: rotate(0deg); }
+      40%, 60% { transform: rotate(90deg); }
+    }
+    #orientationOverlay h2 { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
+    #orientationOverlay p { font-size: 14px; opacity: 0.85; line-height: 1.6; }
+    .btn-skip-rotate {
+      margin-top: 24px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* LOADING OVERLAY */
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.95);
+      z-index: 9998;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+    #loadingOverlay.show { display: flex; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    #loadingOverlay p { font-size: 14px; color: var(--muted); }
+
+    /* ERROR TOAST */
+    #toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 13px;
+      z-index: 9999;
+      transition: transform 0.3s;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.error { background: var(--error); }
+    #toast.success { background: var(--success); }
+
+    @media (max-width: 380px) {
+      .field-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- CONFIGURATION — ZMIEŃ PONIŻSZY URL NA ADRES SWOJEGO GOOGLE APPS SCRIPT -->
+<script>
+  const CONFIG = {
+    GAS_URL: 'WSTAW_TUTAJ_URL_SWOJEGO_GOOGLE_APPS_SCRIPT',
+    // Współrzędne tekstu na PDF (w punktach, od dołu strony, dla A4 595x842pt)
+    // ⚠️ Dostosuj te wartości jeśli tekst nie trafia w odpowiednie miejsca
+    PDF_COORDS: {
+      page1: {
+        // Lewa kolumna (włoska)
+        it_name:         { x: 67,  y: 607 },
+        it_birthCity:    { x: 67,  y: 593 },
+        it_birthDate:    { x: 60,  y: 579 },
+        it_city:         { x: 80,  y: 565 },
+        it_street:       { x: 72,  y: 551 },
+        it_cf:           { x: 43,  y: 537 },
+        it_phone:        { x: 120, y: 537 },
+        it_email:        { x: 72,  y: 523 },
+        // Prawa kolumna (polska)
+        pl_name:         { x: 352, y: 607 },
+        pl_birthCity:    { x: 408, y: 593 },
+        pl_birthDate:    { x: 392, y: 579 },
+        pl_city:         { x: 405, y: 565 },
+        pl_street:       { x: 385, y: 551 },
+        pl_pesel:        { x: 363, y: 537 },
+        pl_phone:        { x: 420, y: 537 },
+        pl_email:        { x: 352, y: 523 },
+      },
+      page2: {
+        it_guests:       { x: 30,  y: 500 },
+        pl_guests:       { x: 315, y: 500 },
+      },
+      page4: {
+        // Podpis (obraz) — lewa kolumna (włoska)
+        it_sign:         { x: 30,  y: 168, w: 140, h: 32 },
+        // Podpis (obraz) — prawa kolumna (polska)
+        pl_sign:         { x: 312, y: 168, w: 140, h: 32 },
+      }
+    }
+  };
+</script>
+
+<!-- ORIENTATION HINT OVERLAY -->
+<div id="orientationOverlay">
+  <div class="ov-icon">📱</div>
+  <h2>Obróć telefon poziomo</h2>
+  <p>Aby wygodnie podpisać umowę,<br>obróć telefon w pozycję poziomą (landscape).</p>
+  <button class="btn-skip-rotate" onclick="skipRotate()">Podpisz w pionie →</button>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p id="loadingText">Generowanie dokumentu…</p>
+</div>
+
+<!-- ERROR TOAST -->
+<div id="toast"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">A</div>
+  <div class="topbar-info">
+    <div class="topbar-name">Azzurro Luxury Boutique</div>
+    <div class="topbar-sub">Podpisanie umowy najmu</div>
+  </div>
+  <button class="btn-preview" onclick="openPdfPreview()">
+    👁 Umowa
+  </button>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar">
+  <div class="progress-steps">
+    <div class="ps-step">
+      <div class="ps-circle active" id="ps1">1</div>
+      <div class="ps-label active" id="pl1">Dane</div>
+    </div>
+    <div class="ps-line" id="line1"></div>
+    <div class="ps-step">
+      <div class="ps-circle" id="ps2">2</div>
+      <div class="ps-label" id="pl2">Podpis</div>
+    </div>
+    <div class="ps-line" id="line2"></div>
+    <div class="ps-step">
+      <div class="ps-circle" id="ps3">3</div>
+      <div class="ps-label" id="pl3">Gotowe</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+  <!-- ===== SECTION 1: FORM ===== -->
+  <div class="section active" id="section-form">
+
+    <div class="info-box">
+      <span class="info-icon">ℹ️</span>
+      <span>Wypełnij wszystkie pola. Możesz w każdej chwili przejrzeć umowę klikając <strong>„Umowa"</strong> w górnym pasku.</span>
+    </div>
+
+    <!-- DANE OSOBOWE -->
+    <div class="form-card">
+      <h3><span class="icon">👤</span> Dane osobowe</h3>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Imię <span class="req">*</span></label>
+          <input type="text" id="f_firstName" placeholder="np. Ewelina" autocomplete="given-name" oninput="onFieldChange()">
+        </div>
+        <div class="field">
+          <label>Nazwisko <span class="req">*</span></label>
+          <input type="text" id="f_lastName" placeholder="np. Ćwiokowiak" autocomplete="family-name" oninput="onFieldChange()">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Miasto urodzenia <span class="req">*</span></label>
+          <input type="text" id="f_birthCity" placeholder="np. Warszawa" oninput="onFieldChange()">
+        </div>
+        <div class="field">
+          <label>Data urodzenia <span class="req">*</span></label>
+          <input type="date" id="f_birthDate" oninput="onFieldChange()">
+        </div>
+      </div>
+    </div>
+
+    <!-- ADRES -->
+    <div class="form-card">
+      <h3><span class="icon">📍</span> Adres zamieszkania</h3>
+
+      <div class="field">
+        <label>Miasto <span class="req">*</span></label>
+        <input type="text" id="f_city" placeholder="np. Warszawa" autocomplete="address-level2" oninput="onFieldChange()">
+      </div>
+      <div class="field">
+        <label>Ulica i numer domu/mieszkania <span class="req">*</span></label>
+        <input type="text" id="f_street" placeholder="np. ul. Marszałkowska 10/5" autocomplete="street-address" oninput="onFieldChange()">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Kod pocztowy <span class="req">*</span></label>
+          <input type="text" id="f_zip" placeholder="00-000" maxlength="6" oninput="onFieldChange()">
+        </div>
+        <div class="field">
+          <label>PESEL lub NIP <span class="req">*</span></label>
+          <input type="text" id="f_pesel" placeholder="PESEL lub NIP" inputmode="numeric" oninput="onFieldChange()">
+        </div>
+      </div>
+    </div>
+
+    <!-- KONTAKT -->
+    <div class="form-card">
+      <h3><span class="icon">📞</span> Dane kontaktowe</h3>
+      <div class="field-row">
+        <div class="field">
+          <label>Numer telefonu <span class="req">*</span></label>
+          <input type="tel" id="f_phone" placeholder="+48 000 000 000" autocomplete="tel" oninput="onFieldChange()">
+        </div>
+        <div class="field">
+          <label>Adres e-mail <span class="req">*</span></label>
+          <input type="email" id="f_email" placeholder="email@example.com" autocomplete="email" oninput="onFieldChange()">
+        </div>
+      </div>
+    </div>
+
+    <!-- GOŚCIE -->
+    <div class="form-card">
+      <h3><span class="icon">👥</span> Pozostali goście</h3>
+      <p style="font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">
+        Podaj imiona i nazwiska wszystkich pozostałych osób (łącznie max. 6 osób, razem z Tobą max. 7).
+        Pola są opcjonalne, jeśli nie ma innych gości.
+      </p>
+      <div id="guestList"></div>
+      <button class="btn-add-guest" onclick="addGuest()">+ Dodaj gościa</button>
+    </div>
+
+    <!-- VALIDATION BAR -->
+    <div class="validation-bar">
+      <div class="val-header">
+        <div class="val-title">Postęp wypełniania</div>
+        <div class="val-count" id="valCount">0 / 9 pól</div>
+      </div>
+      <div class="val-progress">
+        <div class="val-fill" id="valFill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- PROCEED BUTTON -->
+    <button class="btn-main" id="btnProceedSign" onclick="proceedToSign()" disabled>
+      ✍️ Przejdź do podpisania
+    </button>
+
+  </div><!-- /section-form -->
+
+
+  <!-- ===== SECTION 2: SIGNATURE ===== -->
+  <div class="section" id="section-sign">
+
+    <div class="sign-header">
+      <h3>✍️ Podpisz umowę</h3>
+      <p>Użyj palca lub rysika, aby złożyć podpis w polu poniżej.<br>
+      Podpis zostanie umieszczony na umowie (po obu stronach językowych).</p>
+    </div>
+
+    <div class="rotate-hint" id="rotateHint">
+      📱 Obróć telefon poziomo, aby mieć więcej miejsca na podpis
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="signatureCanvas"></canvas>
+      <div class="canvas-label" id="canvasLabel">— Złóż tutaj swój podpis —</div>
+    </div>
+
+    <div class="sign-controls">
+      <button class="btn-clear" onclick="clearSignature()">🗑 Wyczyść</button>
+    </div>
+
+    <button class="btn-main" id="btnConfirmSign" onclick="confirmSignature()" disabled>
+      ✅ Zatwierdź podpis i wyślij
+    </button>
+
+    <div style="margin-top: 12px; text-align: center;">
+      <button onclick="goToStep(1)" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;">
+        ← Wróć do formularza
+      </button>
+    </div>
+
+  </div><!-- /section-sign -->
+
+
+  <!-- ===== SECTION 3: DONE ===== -->
+  <div class="section" id="section-done">
+
+    <div class="done-card">
+      <span class="done-icon" id="doneIcon">⏳</span>
+      <h3 id="doneTitle">Przetwarzanie…</h3>
+      <p id="doneDesc">Trwa generowanie podpisanej umowy. Chwila cierpliwości.</p>
+
+      <div id="statusList">
+        <div class="status-item" id="st-generate">
+          <span class="status-icon">📄</span>
+          <div>
+            <div class="status-text">Generowanie PDF</div>
+            <div class="status-sub">Nakładanie danych na umowę…</div>
+          </div>
+        </div>
+        <div class="status-item pending" id="st-download">
+          <span class="status-icon">💾</span>
+          <div>
+            <div class="status-text">Pobieranie na urządzenie</div>
+            <div class="status-sub">Umowa zostanie zapisana lokalnie</div>
+          </div>
+        </div>
+        <div class="status-item pending" id="st-drive">
+          <span class="status-icon">☁️</span>
+          <div>
+            <div class="status-text">Zapis na Google Drive</div>
+            <div class="status-sub">Folder „Podpisane umowy"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="doneActions" style="display:none;">
+      <button class="btn-main green" onclick="downloadAgain()" style="margin-bottom: 10px;">
+        💾 Pobierz ponownie
+      </button>
+    </div>
+
+  </div><!-- /section-done -->
+
+</div><!-- /content -->
+
+
+<script>
+  // ============================================================
+  // URL PARAMS
+  // ============================================================
+  const params = new URLSearchParams(window.location.search);
+  const PDF_ID = params.get('pdfId') || '';
+  const CONTRACT_ID = params.get('id') || 'unknown';
+
+  // ============================================================
+  // PDF PREVIEW
+  // ============================================================
+  function openPdfPreview() {
+    if (!PDF_ID) { showToast('Brak ID pliku PDF w linku', 'error'); return; }
+    window.open(`https://drive.google.com/file/d/${PDF_ID}/preview`, '_blank');
+  }
+
+  // ============================================================
+  // GUESTS
+  // ============================================================
+  let guestCount = 0;
+  function addGuest() {
+    if (guestCount >= 6) { showToast('Maksymalnie 6 gości'); return; }
+    guestCount++;
+    const div = document.createElement('div');
+    div.className = 'guest-entry';
+    div.id = `ge_${guestCount}`;
+    div.innerHTML = `
+      <input type="text" placeholder="Imię i nazwisko gościa ${guestCount}" id="guest_${guestCount}" oninput="onFieldChange()">
+      <button class="btn-remove" onclick="removeGuest(${guestCount})">×</button>
+    `;
+    document.getElementById('guestList').appendChild(div);
+  }
+  function removeGuest(n) {
+    const el = document.getElementById(`ge_${n}`);
+    if (el) el.remove();
+    onFieldChange();
+  }
+  function getGuests() {
+    const inputs = document.querySelectorAll('[id^="guest_"]');
+    return Array.from(inputs).map(i => i.value.trim()).filter(v => v);
+  }
+
+  // ============================================================
+  // VALIDATION
+  // ============================================================
+  const REQUIRED_FIELDS = ['f_firstName','f_lastName','f_birthCity','f_birthDate','f_city','f_street','f_zip','f_pesel','f_phone','f_email'];
+  const FIELD_COUNT = REQUIRED_FIELDS.length; // 10
+
+  function onFieldChange() {
+    let filled = 0;
+    REQUIRED_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.value.trim()) {
+        filled++;
+        el.classList.add('filled');
+      } else {
+        el && el.classList.remove('filled');
+      }
+    });
+    const pct = Math.round((filled / FIELD_COUNT) * 100);
+    document.getElementById('valFill').style.width = pct + '%';
+    document.getElementById('valFill').className = 'val-fill' + (pct === 100 ? ' complete' : '');
+    document.getElementById('valCount').textContent = `${filled} / ${FIELD_COUNT} pól`;
+    document.getElementById('btnProceedSign').disabled = filled < FIELD_COUNT;
+  }
+
+  function getFormData() {
+    return {
+      firstName:  document.getElementById('f_firstName').value.trim(),
+      lastName:   document.getElementById('f_lastName').value.trim(),
+      birthCity:  document.getElementById('f_birthCity').value.trim(),
+      birthDate:  document.getElementById('f_birthDate').value,
+      city:       document.getElementById('f_city').value.trim(),
+      street:     document.getElementById('f_street').value.trim(),
+      zip:        document.getElementById('f_zip').value.trim(),
+      pesel:      document.getElementById('f_pesel').value.trim(),
+      phone:      document.getElementById('f_phone').value.trim(),
+      email:      document.getElementById('f_email').value.trim(),
+      guests:     getGuests(),
+    };
+  }
+
+  // ============================================================
+  // STEP NAVIGATION
+  // ============================================================
+  let currentStep = 1;
+
+  function goToStep(step) {
+    ['section-form','section-sign','section-done'].forEach((id, i) => {
+      document.getElementById(id).classList.toggle('active', i + 1 === step);
+    });
+    [1,2,3].forEach(n => {
+      const c = document.getElementById(`ps${n}`);
+      const l = document.getElementById(`pl${n}`);
+      if (n < step) { c.className = 'ps-circle done'; c.textContent = '✓'; l.className = 'ps-label done'; }
+      else if (n === step) { c.className = 'ps-circle active'; c.textContent = n; l.className = 'ps-label active'; }
+      else { c.className = 'ps-circle'; c.textContent = n; l.className = 'ps-label'; }
+    });
+    [1,2].forEach(n => {
+      const line = document.getElementById(`line${n}`);
+      if (line) line.className = 'ps-line' + (n < step ? ' done' : '');
+    });
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function proceedToSign() {
+    goToStep(2);
+    setTimeout(() => {
+      resizeCanvas();
+      checkOrientation();
+    }, 300);
+  }
+
+  // ============================================================
+  // SIGNATURE CANVAS
+  // ============================================================
+  let isDrawing = false;
+  let hasSigned = false;
+  let lastX = 0, lastY = 0;
+  const canvas = document.getElementById('signatureCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    const wrapper = canvas.parentElement;
+    const w = wrapper.clientWidth;
+    const h = window.innerWidth > window.innerHeight
+      ? Math.min(window.innerHeight * 0.5, 200)
+      : 180;
+    canvas.width = w;
+    canvas.height = h;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#1A1A2E';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    hasSigned = false;
+    document.getElementById('btnConfirmSign').disabled = true;
+    document.getElementById('canvasLabel').className = 'canvas-label';
+  }
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if (e.touches) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    isDrawing = true;
+    const pos = getPos(e);
+    lastX = pos.x; lastY = pos.y;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+  }
+  function draw(e) {
+    e.preventDefault();
+    if (!isDrawing) return;
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastX = pos.x; lastY = pos.y;
+    if (!hasSigned) {
+      hasSigned = true;
+      document.getElementById('btnConfirmSign').disabled = false;
+      document.getElementById('canvasLabel').className = 'canvas-label signed';
+    }
+  }
+  function endDraw(e) {
+    e.preventDefault();
+    isDrawing = false;
+    ctx.beginPath();
+  }
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('touchstart', startDraw, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
+  canvas.addEventListener('touchend', endDraw, { passive: false });
+
+  function clearSignature() {
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    hasSigned = false;
+    document.getElementById('btnConfirmSign').disabled = true;
+    document.getElementById('canvasLabel').className = 'canvas-label';
+  }
+
+  // ============================================================
+  // ORIENTATION
+  // ============================================================
+  let orientationOk = false;
+  function checkOrientation() {
+    const isLandscape = window.innerWidth > window.innerHeight;
+    document.getElementById('rotateHint').classList.toggle('hidden', isLandscape);
+    if (!isLandscape && !orientationOk) {
+      document.getElementById('orientationOverlay').classList.add('show');
+    }
+  }
+  function skipRotate() {
+    orientationOk = true;
+    document.getElementById('orientationOverlay').classList.remove('show');
+  }
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      document.getElementById('orientationOverlay').classList.remove('show');
+      resizeCanvas();
+      document.getElementById('rotateHint').classList.toggle('hidden', window.innerWidth > window.innerHeight);
+    }, 400);
+  });
+
+  // ============================================================
+  // PDF GENERATION
+  // ============================================================
+  let finalPdfBytes = null;
+  let finalFileName = '';
+
+  async function confirmSignature() {
+    if (!hasSigned) { showToast('Proszę złożyć podpis', 'error'); return; }
+
+    goToStep(3);
+    setStatus('st-generate', 'loading');
+
+    try {
+      const formData = getFormData();
+      const signatureDataUrl = canvas.toDataURL('image/png');
+
+      // 1. Load PDF from GAS proxy
+      showLoading('Pobieranie umowy…');
+      const pdfBytes = await fetchPdfFromGAS(PDF_ID);
+      hideLoading();
+
+      // 2. Generate filled PDF
+      showLoading('Nakładanie danych na umowę…');
+      const filledPdfBytes = await generateFilledPdf(pdfBytes, formData, signatureDataUrl);
+      hideLoading();
+
+      finalPdfBytes = filledPdfBytes;
+      finalFileName = `Umowa_${formData.lastName}_${formData.firstName}_${new Date().toISOString().slice(0,10)}.pdf`;
+
+      setStatus('st-generate', 'ok');
+
+      // 3. Download locally
+      setStatus('st-download', 'loading');
+      downloadPdf(filledPdfBytes, finalFileName);
+      setStatus('st-download', 'ok');
+
+      // 4. Send to Google Drive
+      setStatus('st-drive', 'loading');
+      try {
+        await sendToGAS(filledPdfBytes, finalFileName, formData);
+        setStatus('st-drive', 'ok');
+        showDoneSuccess();
+      } catch(driveErr) {
+        console.warn('Drive upload failed:', driveErr);
+        setStatus('st-drive', 'error');
+        showDonePartial();
+      }
+
+    } catch(err) {
+      console.error(err);
+      hideLoading();
+      showToast('Błąd: ' + err.message, 'error');
+      setStatus('st-generate', 'error');
+    }
+  }
+
+  async function fetchPdfFromGAS(fileId) {
+    if (CONFIG.GAS_URL === 'WSTAW_TUTAJ_URL_SWOJEGO_GOOGLE_APPS_SCRIPT') {
+      // Demo mode: try direct Drive fetch
+      const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+      const resp = await fetch(directUrl);
+      if (!resp.ok) throw new Error('Nie można pobrać PDF. Skonfiguruj GAS_URL w pliku sign.html.');
+      return await resp.arrayBuffer();
+    }
+    const resp = await fetch(`${CONFIG.GAS_URL}?action=getPdf&id=${fileId}`);
+    const json = await resp.json();
+    if (!json.success) throw new Error(json.error || 'Błąd pobierania PDF');
+    const binary = atob(json.data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
+
+  async function generateFilledPdf(pdfBytes, data, signatureDataUrl) {
+    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+
+    // Load font with Polish character support
+    let font;
+    try {
+      const fontBytes = await fetch(
+        'https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Regular.ttf'
+      ).then(r => r.arrayBuffer());
+      font = await pdfDoc.embedFont(fontBytes);
+    } catch(e) {
+      // Fallback to Helvetica (no Polish chars)
+      font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    }
+
+    const pages = pdfDoc.getPages();
+    const FONT_SIZE = 8.5;
+    const COLOR = rgb(0, 0, 0);
+    const C = CONFIG.PDF_COORDS;
+
+    // Format birth date
+    const bd = data.birthDate
+      ? new Date(data.birthDate).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : '';
+    const fullName = `${data.firstName} ${data.lastName}`;
+    const addressFull = `${data.street}, ${data.zip} ${data.city}`;
+
+    // Helper to draw text on a page
+    function drawText(page, text, x, y) {
+      if (!text || !page) return;
+      try {
+        page.drawText(String(text), { x, y, size: FONT_SIZE, font, color: COLOR });
+      } catch(e) { console.warn('drawText error:', e); }
+    }
+
+    // ---- PAGE 1: TENANT DATA ----
+    if (pages.length >= 1) {
+      const p1 = pages[0];
+      const co = C.page1;
+
+      // Italian column
+      drawText(p1, fullName,        co.it_name.x,      co.it_name.y);
+      drawText(p1, data.birthCity,  co.it_birthCity.x, co.it_birthCity.y);
+      drawText(p1, bd,              co.it_birthDate.x, co.it_birthDate.y);
+      drawText(p1, data.city,       co.it_city.x,      co.it_city.y);
+      drawText(p1, data.street,     co.it_street.x,    co.it_street.y);
+      drawText(p1, data.pesel,      co.it_cf.x,        co.it_cf.y);
+      drawText(p1, data.phone,      co.it_phone.x,     co.it_phone.y);
+      drawText(p1, data.email,      co.it_email.x,     co.it_email.y);
+
+      // Polish column
+      drawText(p1, fullName,        co.pl_name.x,      co.pl_name.y);
+      drawText(p1, data.birthCity,  co.pl_birthCity.x, co.pl_birthCity.y);
+      drawText(p1, bd,              co.pl_birthDate.x, co.pl_birthDate.y);
+      drawText(p1, data.city,       co.pl_city.x,      co.pl_city.y);
+      drawText(p1, data.street,     co.pl_street.x,    co.pl_street.y);
+      drawText(p1, data.pesel,      co.pl_pesel.x,     co.pl_pesel.y);
+      drawText(p1, data.phone,      co.pl_phone.x,     co.pl_phone.y);
+      drawText(p1, data.email,      co.pl_email.x,     co.pl_email.y);
+    }
+
+    // ---- PAGE 2: GUESTS ----
+    if (pages.length >= 2 && data.guests.length > 0) {
+      const p2 = pages[1];
+      const guestStr = data.guests.join(', ');
+      drawText(p2, guestStr, C.page2.it_guests.x, C.page2.it_guests.y);
+      drawText(p2, guestStr, C.page2.pl_guests.x, C.page2.pl_guests.y);
+    }
+
+    // ---- PAGE 4: SIGNATURE ----
+    if (pages.length >= 4) {
+      const p4 = pages[3];
+      const sc = C.page4;
+
+      // Convert canvas data URL to PNG bytes
+      const signB64 = signatureDataUrl.split(',')[1];
+      const signBin = atob(signB64);
+      const signBytes = new Uint8Array(signBin.length);
+      for (let i = 0; i < signBin.length; i++) signBytes[i] = signBin.charCodeAt(i);
+
+      const signImg = await pdfDoc.embedPng(signBytes.buffer);
+
+      // Draw on Italian column
+      p4.drawImage(signImg, {
+        x: sc.it_sign.x, y: sc.it_sign.y,
+        width: sc.it_sign.w, height: sc.it_sign.h
+      });
+
+      // Draw on Polish column
+      p4.drawImage(signImg, {
+        x: sc.pl_sign.x, y: sc.pl_sign.y,
+        width: sc.pl_sign.w, height: sc.pl_sign.h
+      });
+    }
+
+    return await pdfDoc.save();
+  }
+
+  function downloadPdf(bytes, fileName) {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  async function sendToGAS(pdfBytes, fileName, formData) {
+    if (CONFIG.GAS_URL === 'WSTAW_TUTAJ_URL_SWOJEGO_GOOGLE_APPS_SCRIPT') {
+      throw new Error('GAS_URL nie skonfigurowany');
+    }
+
+    // Convert to base64
+    let binary = '';
+    const bytes = new Uint8Array(pdfBytes);
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    const base64 = btoa(binary);
+
+    const payload = {
+      pdf: base64,
+      fileName,
+      contractId: CONTRACT_ID,
+      clientName: `${formData.firstName} ${formData.lastName}`,
+      clientEmail: formData.email,
+      timestamp: new Date().toISOString()
+    };
+
+    const resp = await fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    const json = await resp.json();
+    if (!json.success) throw new Error(json.error || 'Błąd zapisu na Drive');
+  }
+
+  // ============================================================
+  // STATUS HELPERS
+  // ============================================================
+  function setStatus(id, state) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('pending','ok','loading','error');
+    el.classList.add(state);
+    const icon = el.querySelector('.status-icon');
+    if (state === 'ok') icon.textContent = '✅';
+    else if (state === 'loading') icon.textContent = '⏳';
+    else if (state === 'error') icon.textContent = '⚠️';
+    else if (id === 'st-generate') icon.textContent = '📄';
+    else if (id === 'st-download') icon.textContent = '💾';
+    else if (id === 'st-drive') icon.textContent = '☁️';
+  }
+
+  function showDoneSuccess() {
+    document.getElementById('doneIcon').textContent = '🎉';
+    document.getElementById('doneTitle').textContent = 'Umowa podpisana!';
+    document.getElementById('doneDesc').textContent =
+      'Dziękujemy! Podpisana umowa została pobrana na Twoje urządzenie i zapisana w folderze „Podpisane umowy" na Google Drive.';
+    document.getElementById('doneActions').style.display = 'block';
+  }
+
+  function showDonePartial() {
+    document.getElementById('doneIcon').textContent = '⚠️';
+    document.getElementById('doneTitle').textContent = 'Prawie gotowe!';
+    document.getElementById('doneDesc').textContent =
+      'Umowa została pobrana na Twoje urządzenie. Zapis na Google Drive nie powiódł się — właściciel zostanie poinformowany o konieczności skonfigurowania GAS.';
+    document.getElementById('doneActions').style.display = 'block';
+  }
+
+  function downloadAgain() {
+    if (finalPdfBytes && finalFileName) {
+      downloadPdf(finalPdfBytes, finalFileName);
+    }
+  }
+
+  // ============================================================
+  // LOADING + TOAST
+  // ============================================================
+  function showLoading(msg) {
+    document.getElementById('loadingText').textContent = msg || 'Proszę czekać…';
+    document.getElementById('loadingOverlay').classList.add('show');
+  }
+  function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }
+
+  let toastTimer;
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show' + (type ? ' ' + type : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  window.addEventListener('resize', () => {
+    if (currentStep === 2) resizeCanvas();
+  });
+
+  // Validate PDF_ID
+  if (!PDF_ID) {
+    showToast('Brak ID dokumentu w linku — sprawdź czy link jest poprawny.', 'error');
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azzurro Luxury Boutique — Panel Umów</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --navy: #0D1B2A;
+      --navy-mid: #142032;
+      --navy-light: #1C2E44;
+      --gold: #C9A84C;
+      --gold-glow: rgba(201,168,76,0.15);
+      --gold-border: rgba(201,168,76,0.3);
+      --white: #F5F0E8;
+      --muted: #7A90AA;
+      --success: #4CAF7D;
+      --error: #E57373;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* BACKGROUND DECORATION */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -200px; left: -200px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(28,76,120,0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HEADER */
+    header {
+      position: relative; z-index: 1;
+      padding: 48px 40px 40px;
+      border-bottom: 1px solid var(--gold-border);
+      display: flex;
+      align-items: flex-end;
+      gap: 24px;
+      background: linear-gradient(180deg, rgba(13,27,42,0.8) 0%, transparent 100%);
+    }
+    .logo-mark {
+      width: 56px; height: 56px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .header-text {}
+    .hotel-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      line-height: 1;
+    }
+    .hotel-name span { color: var(--gold); }
+    .panel-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    /* MAIN LAYOUT */
+    main {
+      position: relative; z-index: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--navy-mid);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
+    }
+    .card h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 8px;
+      color: var(--white);
+    }
+    .card p.description {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* INPUT */
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    input[type="text"] {
+      flex: 1;
+      background: var(--navy-light);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--white);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--gold);
+    }
+    input[type="text"]::placeholder {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* BUTTONS */
+    .btn-primary {
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      border-radius: 10px;
+      padding: 14px 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { background: var(--gold-light, #E8C876); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold-border);
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover {
+      background: var(--gold-glow);
+      border-color: var(--gold);
+    }
+
+    /* RESULT CARD */
+    #resultCard { display: none; }
+    .link-box {
+      background: var(--navy-light);
+      border: 1px solid var(--gold-border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      font-size: 12px;
+      color: var(--muted);
+      word-break: break-all;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.02em;
+    }
+    .link-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .copy-feedback {
+      font-size: 11px;
+      color: var(--success);
+      opacity: 0;
+      transition: opacity 0.3s;
+      align-self: center;
+    }
+    .copy-feedback.show { opacity: 1; }
+
+    /* QR CODE */
+    .qr-section {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    #qrcode {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      width: 120px; height: 120px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #qrcode canvas, #qrcode img { width: 100px !important; height: 100px !important; }
+    .qr-info h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .qr-info p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* HISTORY */
+    #historyCard { display: none; }
+    .history-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .history-item {
+      background: var(--navy-light);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .history-item .hi-date { color: var(--muted); flex-shrink: 0; }
+    .history-item .hi-name { flex: 1; font-weight: 500; }
+    .history-item .hi-link {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--gold);
+      word-break: break-all;
+      cursor: pointer;
+    }
+    .history-item .hi-link:hover { text-decoration: underline; }
+    .hi-copy-btn {
+      background: none;
+      border: 1px solid var(--gold-border);
+      border-radius: 6px;
+      color: var(--gold);
+      font-size: 11px;
+      padding: 4px 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .hi-copy-btn:hover { background: var(--gold-glow); }
+
+    /* INSTRUCTIONS */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .step-item {
+      display: flex;
+      gap: 14px;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border: 1px solid var(--gold-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-content h4 {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .step-content p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* SETUP ALERT */
+    .setup-alert {
+      background: rgba(201,168,76,0.08);
+      border: 1px solid var(--gold-border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 20px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .setup-alert strong { color: var(--gold); }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      margin: 8px 0 24px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      header { padding: 32px 20px 28px; }
+      main { padding: 32px 16px 60px; }
+      .card { padding: 24px 20px; }
+      .input-group { flex-direction: column; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .qr-section { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">A</div>
+  <div class="header-text">
+    <div class="hotel-name">Azzurro <span>Luxury</span> Boutique</div>
+    <div class="panel-label">Panel Zarządzania Umowami</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- STEP 1: GENERATE LINK -->
+  <div class="section-title">Nowa Umowa</div>
+  <div class="card">
+    <h2>Generuj Link do Podpisania</h2>
+    <p class="description">
+      Wklej link do PDF z Google Drive (umowa musi być udostępniona jako „Każdy z linkiem może wyświetlić").
+      Opcjonalnie dodaj nazwę klienta, aby łatwo zidentyfikować link w historii.
+    </p>
+
+    <div style="margin-bottom: 14px;">
+      <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Link do umowy PDF na Google Drive *</label>
+      <input type="text" id="driveLink" placeholder="https://drive.google.com/file/d/TWOJE_ID/view?usp=sharing">
+    </div>
+    <div style="margin-bottom: 20px;">
+      <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Nazwa klienta (opcjonalnie, do historii)</label>
+      <input type="text" id="clientName" placeholder="np. Ewelina Ćwiokowiak">
+    </div>
+
+    <div class="input-group">
+      <button class="btn-primary" onclick="generateLink()" style="width: 100%;">
+        ✦ Generuj Link dla Klienta
+      </button>
+    </div>
+
+    <div id="errorMsg" style="display:none; margin-top: 14px; font-size: 12px; color: var(--error);"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="card" id="resultCard">
+    <h2>Link wygenerowany ✓</h2>
+    <p class="description" id="resultDesc">Skopiuj poniższy link i wyślij klientowi SMS/email.</p>
+
+    <div class="link-box" id="generatedLinkDisplay"></div>
+
+    <div class="link-actions">
+      <button class="btn-primary btn-copy" onclick="copyLink()">
+        <span>📋</span> Kopiuj Link
+      </button>
+      <button class="btn-secondary" onclick="openLink()">Otwórz w nowej karcie →</button>
+      <span class="copy-feedback" id="copyFeedback">✓ Skopiowano!</span>
+    </div>
+
+    <div class="qr-section">
+      <div id="qrcode"></div>
+      <div class="qr-info">
+        <h4>Kod QR</h4>
+        <p>Pokaż klientowi kod QR lub wyślij link SMS/WhatsApp.<br>
+        Link jest unikalny i jednorazowy.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card" id="historyCard">
+    <h2>Historia Linków</h2>
+    <p class="description">Ostatnio wygenerowane linki (przechowywane lokalnie w przeglądarce).</p>
+    <ul class="history-list" id="historyList"></ul>
+    <div style="margin-top: 16px; text-align: right;">
+      <button class="btn-secondary" onclick="clearHistory()">Wyczyść historię</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- INSTRUCTIONS -->
+  <div class="section-title">Jak to działa</div>
+  <div class="card">
+    <div class="steps-grid">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Przygotuj umowę PDF</h4>
+          <p>Wstępnie wypełnij umowę (Twoje dane jako Wynajmującego) i wgraj PDF na Google Drive.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Generuj link</h4>
+          <p>Wklej link do PDF tutaj i kliknij „Generuj". Otrzymasz unikalny link dla klienta.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Wyślij klientowi</h4>
+          <p>Prześlij link SMS lub WhatsApp. Klient otwiera stronę na telefonie i wypełnia dane.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Podpisanie i zapis</h4>
+          <p>Klient podpisuje palcem na ekranie. Podpisana umowa trafia do folderu „Podpisane umowy" na Drive.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-alert">
+      <strong>⚙️ Wymagana konfiguracja jednorazowa:</strong> Aby zapisywanie na Google Drive działało, musisz wdrożyć Google Apps Script.
+      Kod GAS znajdziesz w pliku <strong>gas-code.js</strong> w tym repozytorium.
+      Po wdrożeniu, wklej URL GAS Web App do pliku <strong>sign.html</strong> (stała <code>GAS_URL</code> na początku pliku).
+    </div>
+  </div>
+
+</main>
+
+<script>
+  let generatedLink = '';
+
+  function extractFileId(url) {
+    // Handles formats:
+    // https://drive.google.com/file/d/FILE_ID/view
+    // https://drive.google.com/open?id=FILE_ID
+    // https://docs.google.com/...
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9_-]+)/,
+      /[?&]id=([a-zA-Z0-9_-]+)/,
+      /\/d\/([a-zA-Z0-9_-]+)/
+    ];
+    for (const p of patterns) {
+      const m = url.match(p);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  function generateLink() {
+    const url = document.getElementById('driveLink').value.trim();
+    const clientName = document.getElementById('clientName').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+
+    errorMsg.style.display = 'none';
+
+    if (!url) {
+      errorMsg.textContent = '⚠ Proszę wkleić link do Google Drive.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    const fileId = extractFileId(url);
+    if (!fileId) {
+      errorMsg.textContent = '⚠ Nie można odczytać ID pliku. Upewnij się, że to prawidłowy link Google Drive.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    // Generate UUID
+    const uuid = typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : 'xxxx-xxxx-4xxx-yxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+
+    // Build sign.html URL (same directory as index.html)
+    const base = window.location.href.replace(/index\.html.*$/, '').replace(/\/$/, '');
+    generatedLink = `${base}/sign.html?pdfId=${fileId}&id=${uuid}`;
+
+    // Display result
+    document.getElementById('generatedLinkDisplay').textContent = generatedLink;
+    document.getElementById('resultDesc').textContent =
+      clientName
+        ? `Link dla: ${clientName}. Skopiuj i wyślij klientowi.`
+        : 'Skopiuj poniższy link i wyślij klientowi SMS/email.';
+    document.getElementById('resultCard').style.display = 'block';
+
+    // QR code
+    const qrDiv = document.getElementById('qrcode');
+    qrDiv.innerHTML = '';
+    new QRCode(qrDiv, {
+      text: generatedLink,
+      width: 100,
+      height: 100,
+      colorDark: '#0D1B2A',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    // Save to history
+    saveHistory({ url: generatedLink, client: clientName || '(bez nazwy)', date: new Date().toLocaleString('pl-PL'), fileId });
+
+    // Scroll to result
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function copyLink() {
+    if (!generatedLink) return;
+    navigator.clipboard.writeText(generatedLink).then(() => {
+      const fb = document.getElementById('copyFeedback');
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2500);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = generatedLink;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    });
+  }
+
+  function openLink() {
+    if (generatedLink) window.open(generatedLink, '_blank');
+  }
+
+  // HISTORY
+  function saveHistory(item) {
+    let hist = JSON.parse(localStorage.getItem('azzurro_history') || '[]');
+    hist.unshift(item);
+    if (hist.length > 20) hist = hist.slice(0, 20);
+    localStorage.setItem('azzurro_history', JSON.stringify(hist));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const hist = JSON.parse(localStorage.getItem('azzurro_history') || '[]');
+    const card = document.getElementById('historyCard');
+    const list = document.getElementById('historyList');
+    if (!hist.length) { card.style.display = 'none'; return; }
+
+    card.style.display = 'block';
+    list.innerHTML = hist.map(item => `
+      <li class="history-item">
+        <span class="hi-date">${item.date}</span>
+        <span class="hi-name">${item.client}</span>
+        <button class="hi-copy-btn" onclick="navigator.clipboard.writeText('${item.url}')">Kopiuj</button>
+      </li>
+    `).join('');
+  }
+
+  function clearHistory() {
+    if (confirm('Wyczyścić historię linków?')) {
+      localStorage.removeItem('azzurro_history');
+      renderHistory();
+    }
+  }
+
+  // Init
+  renderHistory();
+
+  // Allow Enter key on input
+  document.getElementById('driveLink').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generateLink();
+  });
+</script>
+
+</body>
+</html>
