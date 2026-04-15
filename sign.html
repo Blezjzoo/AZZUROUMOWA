@@ -335,20 +335,17 @@
       line-height: 1.5;
     }
 
-    .rotate-hint {
-      background: var(--gold-bg);
-      border: 1px solid rgba(184,134,11,0.25);
+    .sign-tip {
+      background: var(--blue-pale);
       border-radius: var(--radius);
-      padding: 14px 18px;
+      padding: 12px 16px;
       margin-bottom: 16px;
       font-size: 13px;
-      color: var(--gold);
+      color: var(--blue);
       display: flex;
       align-items: center;
       gap: 10px;
-      justify-content: center;
     }
-    .rotate-hint.hidden { display: none; }
 
     .canvas-wrapper {
       background: var(--surface);
@@ -438,38 +435,7 @@
     .status-item.loading .status-icon { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ORIENTATION OVERLAY */
-    #orientationOverlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(21,101,192,0.97);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      color: white;
-      text-align: center;
-      padding: 40px;
-    }
-    #orientationOverlay.show { display: flex; }
-    #orientationOverlay .ov-icon { font-size: 64px; margin-bottom: 24px; animation: rotateHint 2s ease-in-out infinite; }
-    @keyframes rotateHint {
-      0%, 100% { transform: rotate(0deg); }
-      40%, 60% { transform: rotate(90deg); }
-    }
-    #orientationOverlay h2 { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
-    #orientationOverlay p { font-size: 14px; opacity: 0.85; line-height: 1.6; }
-    .btn-skip-rotate {
-      margin-top: 24px;
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.4);
-      color: white;
-      border-radius: 10px;
-      padding: 12px 24px;
-      font-size: 14px;
-      cursor: pointer;
-    }
+
 
     /* LOADING OVERLAY */
     #loadingOverlay {
@@ -524,14 +490,6 @@
     GAS_URL: 'https://script.google.com/macros/s/AKfycbxU79cMxQCJ6yh5EoZ0dRKQVJn2HGu9NOA7tix8smVzU5_NZd-wAp1FBcR7wemVzGNaJw/exec',
   };
 </script>
-
-<!-- ORIENTATION HINT OVERLAY -->
-<div id="orientationOverlay">
-  <div class="ov-icon">📱</div>
-  <h2>Obróć telefon poziomo</h2>
-  <p>Aby wygodnie podpisać umowę,<br>obróć telefon w pozycję poziomą (landscape).</p>
-  <button class="btn-skip-rotate" onclick="skipRotate()">Podpisz w pionie →</button>
-</div>
 
 <!-- LOADING OVERLAY -->
 <div id="loadingOverlay">
@@ -690,8 +648,8 @@
       Podpis zostanie umieszczony na umowie (po obu stronach językowych).</p>
     </div>
 
-    <div class="rotate-hint" id="rotateHint">
-      📱 Obróć telefon poziomo, aby mieć więcej miejsca na podpis
+    <div class="sign-tip">
+      ☝️ Złóż podpis palcem w polu poniżej
     </div>
 
     <div class="canvas-wrapper">
@@ -870,7 +828,6 @@
     goToStep(2);
     setTimeout(() => {
       resizeCanvas();
-      checkOrientation();
     }, 300);
   }
 
@@ -888,7 +845,7 @@
     const w = wrapper.clientWidth;
     const h = window.innerWidth > window.innerHeight
       ? Math.min(window.innerHeight * 0.5, 200)
-      : 180;
+      : 280;
     canvas.width = w;
     canvas.height = h;
     ctx.fillStyle = '#fff';
@@ -961,29 +918,6 @@
   }
 
   // ============================================================
-  // ORIENTATION
-  // ============================================================
-  let orientationOk = false;
-  function checkOrientation() {
-    const isLandscape = window.innerWidth > window.innerHeight;
-    document.getElementById('rotateHint').classList.toggle('hidden', isLandscape);
-    if (!isLandscape && !orientationOk) {
-      document.getElementById('orientationOverlay').classList.add('show');
-    }
-  }
-  function skipRotate() {
-    orientationOk = true;
-    document.getElementById('orientationOverlay').classList.remove('show');
-  }
-  window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-      document.getElementById('orientationOverlay').classList.remove('show');
-      resizeCanvas();
-      document.getElementById('rotateHint').classList.toggle('hidden', window.innerWidth > window.innerHeight);
-    }, 400);
-  });
-
-  // ============================================================
   // PDF GENERATION — przez GAS (wypełnienie Google Doc)
   // ============================================================
   let finalPdfBytes = null;
@@ -1004,34 +938,31 @@
 
       finalFileName = `Umowa_${formData.lastName}_${formData.firstName}_${new Date().toISOString().slice(0,10)}.pdf`;
 
-      // 1. Wyślij dane do GAS — GAS wypełni Google Doc i zwróci PDF base64
+      // Wyślij dane do GAS — jedno żądanie: wypełnia Doc, zwraca PDF i zapisuje na Drive
       showLoading('Generowanie umowy z Twoimi danymi…');
 
-      const pdfBase64 = await fetchFilledPdfFromGAS(DOC_ID, formData, signBase64);
+      const result = await fetchFilledPdfFromGAS(DOC_ID, formData, signBase64, finalFileName);
       hideLoading();
 
       // Dekoduj base64 -> Uint8Array
-      const binary = atob(pdfBase64);
+      const binary = atob(result.pdfBase64);
       const bytes  = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       finalPdfBytes = bytes.buffer;
 
       setStatus('st-generate', 'ok');
 
-      // 2. Pobierz lokalnie
+      // Pobierz lokalnie
       setStatus('st-download', 'loading');
       downloadPdf(finalPdfBytes, finalFileName);
       setStatus('st-download', 'ok');
 
-      // 3. Zapisz na Google Drive (POST do GAS)
-      setStatus('st-drive', 'loading');
-      try {
-        await sendToGAS(pdfBase64, finalFileName, formData);
-        setStatus('st-drive', 'ok');
+      // Status Drive — już obsłużony przez GAS w jednym żądaniu
+      setStatus('st-drive', result.driveOk ? 'ok' : 'error');
+
+      if (result.driveOk) {
         showDoneSuccess();
-      } catch(driveErr) {
-        console.warn('Drive upload failed:', driveErr);
-        setStatus('st-drive', 'error');
+      } else {
         showDonePartial();
       }
 
@@ -1048,7 +979,7 @@
    * GAS kopiuje szablon Google Doc, podstawia placeholdery, wstawia podpis,
    * eksportuje jako PDF i zwraca base64.
    */
-  async function fetchFilledPdfFromGAS(docId, data, signBase64) {
+  async function fetchFilledPdfFromGAS(docId, data, signBase64, fileName) {
     if (!CONFIG.GAS_URL || CONFIG.GAS_URL.includes('WSTAW_TUTAJ')) {
       throw new Error('GAS_URL nie skonfigurowany w pliku sign.html.');
     }
@@ -1068,6 +999,13 @@
       email:        data.email,
       guests:       data.guests.join(', '),
       signBase64:   signBase64,
+      // Zapis na Drive w jednym żądaniu (unika problemów CORS na mobile)
+      saveToDrive:  true,
+      fileName:     fileName,
+      contractId:   CONTRACT_ID,
+      clientName:   data.firstName + ' ' + data.lastName,
+      clientEmail:  data.email,
+      timestamp:    new Date().toISOString(),
     };
 
     const resp = await fetch(CONFIG.GAS_URL, {
@@ -1079,7 +1017,7 @@
     if (!resp.ok) throw new Error('Błąd połączenia z GAS: ' + resp.status);
     const json = await resp.json();
     if (!json.success) throw new Error(json.error || 'GAS zwrócił błąd');
-    return json.data; // base64 PDF
+    return { pdfBase64: json.data, driveOk: !!json.driveOk };
   }
 
   function downloadPdf(bytes, fileName) {
@@ -1092,29 +1030,6 @@
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-  }
-
-  async function sendToGAS(pdfBase64, fileName, formData) {
-    if (CONFIG.GAS_URL === 'WSTAW_TUTAJ_URL_SWOJEGO_GOOGLE_APPS_SCRIPT') {
-      throw new Error('GAS_URL nie skonfigurowany');
-    }
-
-    const payload = {
-      pdf: pdfBase64,
-      fileName,
-      contractId: CONTRACT_ID,
-      clientName: `${formData.firstName} ${formData.lastName}`,
-      clientEmail: formData.email,
-      timestamp: new Date().toISOString()
-    };
-
-    const resp = await fetch(CONFIG.GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
-    const json = await resp.json();
-    if (!json.success) throw new Error(json.error || 'Błąd zapisu na Drive');
   }
 
   // ============================================================
@@ -1143,10 +1058,10 @@
   }
 
   function showDonePartial() {
-    document.getElementById('doneIcon').textContent = '⚠️';
-    document.getElementById('doneTitle').textContent = 'Prawie gotowe!';
+    document.getElementById('doneIcon').textContent = '✅';
+    document.getElementById('doneTitle').textContent = 'Umowa podpisana!';
     document.getElementById('doneDesc').textContent =
-      'Umowa została pobrana na Twoje urządzenie. Zapis na Google Drive nie powiódł się — właściciel zostanie poinformowany o konieczności skonfigurowania GAS.';
+      'Dziękujemy! Podpisana umowa została pobrana na Twoje urządzenie. Prosimy o jej okazanie przy zameldowaniu.';
     document.getElementById('doneActions').style.display = 'block';
   }
 
