@@ -435,6 +435,108 @@
     .status-item.loading .status-icon { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* PAYMENT CARD */
+    .payment-card {
+      background: var(--surface);
+      border: 1.5px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .payment-card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .payment-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+    .payment-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: right;
+    }
+    .payment-amount {
+      background: var(--gold-bg);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .payment-amount-label {
+      font-size: 12px;
+      color: var(--gold);
+    }
+    .payment-amount-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .iban-row {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .iban-number {
+      flex: 1;
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      word-break: break-all;
+    }
+    .btn-copy {
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-copy:active { background: var(--success); }
+    .ios-save-hint {
+      background: var(--blue-pale);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--blue);
+      line-height: 1.6;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .ios-save-hint.show { display: block; }
+
 
 
     /* LOADING OVERLAY */
@@ -708,9 +810,41 @@
     </div>
 
     <div id="doneActions" style="display:none;">
+
+      <!-- Podpowiedź dla iOS jak zapisać PDF -->
+      <div class="ios-save-hint" id="iosSaveHint">
+        📄 Twoja umowa otworzyła się w nowej karcie. Kliknij ikonę <strong>„Udostępnij" (□↑)</strong> i wybierz <strong>„Zapisz w Plikach"</strong> aby zachować kopię.
+      </div>
+
+      <!-- Dane do przelewu -->
+      <div class="payment-card">
+        <h4>🏦 Dane do przelewu zaliczki</h4>
+
+        <div class="payment-amount">
+          <span class="payment-amount-label">Kwota zaliczki</span>
+          <span class="payment-amount-value">200 €</span>
+        </div>
+
+        <div class="payment-row">
+          <span class="payment-label">Bank</span>
+          <span class="payment-value">Intesa Sanpaolo</span>
+        </div>
+        <div class="payment-row">
+          <span class="payment-label">Waluta</span>
+          <span class="payment-value">EUR</span>
+        </div>
+
+        <div class="payment-label" style="margin-bottom: 8px;">Numer konta IBAN</div>
+        <div class="iban-row">
+          <span class="iban-number" id="ibanNumber">IT30 K030 6985 0311 0000 0008 488</span>
+          <button class="btn-copy" onclick="copyIban()">📋 Kopiuj</button>
+        </div>
+      </div>
+
       <button class="btn-main green" onclick="downloadAgain()" style="margin-bottom: 10px;">
-        💾 Pobierz ponownie
+        💾 Pobierz umowę ponownie
       </button>
+
     </div>
 
   </div><!-- /section-done -->
@@ -1023,13 +1157,23 @@
   function downloadPdf(bytes, fileName) {
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      // iOS nie obsługuje atrybutu download — otwieramy w nowej karcie (nie opuszcza strony)
+      const newTab = window.open(url, '_blank');
+      if (!newTab) {
+        // fallback jeśli popup zablokowany
+        showToast('Otwórz link aby zapisać umowę', '');
+      }
+    } else {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   // ============================================================
@@ -1049,20 +1193,46 @@
     else if (id === 'st-drive') icon.textContent = '☁️';
   }
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
   function showDoneSuccess() {
-    document.getElementById('doneIcon').textContent = '🎉';
+    document.getElementById('doneIcon').textContent = '✅';
     document.getElementById('doneTitle').textContent = 'Umowa podpisana!';
     document.getElementById('doneDesc').textContent =
-      'Dziękujemy! Podpisana umowa została pobrana na Twoje urządzenie i zapisana w folderze „Podpisane umowy" na Google Drive.';
+      'Dziękujemy! Prosimy o dokonanie przelewu zaliczki i okazanie umowy przy zameldowaniu.';
+    document.getElementById('statusList').style.display = 'none';
     document.getElementById('doneActions').style.display = 'block';
+    if (isIOS) document.getElementById('iosSaveHint').classList.add('show');
   }
 
   function showDonePartial() {
     document.getElementById('doneIcon').textContent = '✅';
     document.getElementById('doneTitle').textContent = 'Umowa podpisana!';
     document.getElementById('doneDesc').textContent =
-      'Dziękujemy! Podpisana umowa została pobrana na Twoje urządzenie. Prosimy o jej okazanie przy zameldowaniu.';
+      'Dziękujemy! Prosimy o dokonanie przelewu zaliczki i okazanie umowy przy zameldowaniu.';
+    document.getElementById('statusList').style.display = 'none';
     document.getElementById('doneActions').style.display = 'block';
+    if (isIOS) document.getElementById('iosSaveHint').classList.add('show');
+  }
+
+  function copyIban() {
+    const iban = 'IT30K0306985031100000008488';
+    navigator.clipboard.writeText(iban).then(() => {
+      showToast('Numer IBAN skopiowany! ✓', 'success');
+      const btn = document.querySelector('.btn-copy');
+      btn.textContent = '✓ Skopiowano';
+      setTimeout(() => { btn.textContent = '📋 Kopiuj'; }, 2000);
+    }).catch(() => {
+      // Fallback dla starszych przeglądarek
+      const el = document.createElement('textarea');
+      el.value = iban;
+      el.style.position = 'fixed'; el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('Numer IBAN skopiowany! ✓', 'success');
+    });
   }
 
   function downloadAgain() {
@@ -1095,7 +1265,8 @@
   // INIT
   // ============================================================
   window.addEventListener('resize', () => {
-    if (currentStep === 2) resizeCanvas();
+    // Nie resetuj canvasu jeśli użytkownik już się podpisał (scroll na mobile chowa pasek adresu i triggeruje resize)
+    if (currentStep === 2 && !hasSigned) resizeCanvas();
   });
 
   // Validate DOC_ID
