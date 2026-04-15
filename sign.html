@@ -1049,7 +1049,7 @@
    * eksportuje jako PDF i zwraca base64.
    */
   async function fetchFilledPdfFromGAS(docId, data, signBase64) {
-    if (CONFIG.GAS_URL === 'https://script.google.com/macros/s/AKfycbwYeTYMeHzQ4oUwzcBD1gEGm_eurrWzOLQtn-vTtDZV_-DR81qzS8Bc9eKo3JucjZQJRw/exec') {
+    if (!CONFIG.GAS_URL || CONFIG.GAS_URL.includes('WSTAW_TUTAJ')) {
       throw new Error('GAS_URL nie skonfigurowany w pliku sign.html.');
     }
 
