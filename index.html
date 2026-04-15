@@ -390,13 +390,14 @@
   <div class="card">
     <h2>Generuj Link do Podpisania</h2>
     <p class="description">
-      Wklej link do PDF z Google Drive (umowa musi być udostępniona jako „Każdy z linkiem może wyświetlić").
+      Wklej link do szablonu umowy w Google Docs (dokument musi być udostępniony jako „Każdy z linkiem może wyświetlić").
+      W szablonie użyj placeholderów jak <code style="background:rgba(201,168,76,0.1);padding:1px 5px;border-radius:4px;color:var(--gold);">{{IMIE_NAZWISKO}}</code> w miejscach danych klienta.
       Opcjonalnie dodaj nazwę klienta, aby łatwo zidentyfikować link w historii.
     </p>
 
     <div style="margin-bottom: 14px;">
-      <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Link do umowy PDF na Google Drive *</label>
-      <input type="text" id="driveLink" placeholder="https://drive.google.com/file/d/TWOJE_ID/view?usp=sharing">
+      <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Link do szablonu umowy w Google Docs *</label>
+      <input type="text" id="driveLink" placeholder="https://docs.google.com/document/d/TWOJE_ID/edit?usp=sharing">
     </div>
     <div style="margin-bottom: 20px;">
       <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Nazwa klienta (opcjonalnie, do historii)</label>
@@ -456,15 +457,15 @@
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>Przygotuj umowę PDF</h4>
-          <p>Wstępnie wypełnij umowę (Twoje dane jako Wynajmującego) i wgraj PDF na Google Drive.</p>
+          <h4>Przygotuj szablon w Google Docs</h4>
+          <p>Utwórz umowę w Google Docs używając placeholderów: <strong>{{IMIE_NAZWISKO}}</strong>, <strong>{{PESEL}}</strong>, <strong>{{EMAIL}}</strong> itd. w miejscach danych klienta.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
           <h4>Generuj link</h4>
-          <p>Wklej link do PDF tutaj i kliknij „Generuj". Otrzymasz unikalny link dla klienta.</p>
+          <p>Wklej link do Google Docs tutaj i kliknij „Generuj". Otrzymasz unikalny link dla klienta.</p>
         </div>
       </div>
       <div class="step-item">
@@ -520,14 +521,14 @@
     errorMsg.style.display = 'none';
 
     if (!url) {
-      errorMsg.textContent = '⚠ Proszę wkleić link do Google Drive.';
+      errorMsg.textContent = '⚠ Proszę wkleić link do Google Docs.';
       errorMsg.style.display = 'block';
       return;
     }
 
     const fileId = extractFileId(url);
     if (!fileId) {
-      errorMsg.textContent = '⚠ Nie można odczytać ID pliku. Upewnij się, że to prawidłowy link Google Drive.';
+      errorMsg.textContent = '⚠ Nie można odczytać ID dokumentu. Upewnij się, że to prawidłowy link Google Docs lub Google Drive.';
       errorMsg.style.display = 'block';
       return;
     }
@@ -542,7 +543,7 @@
 
     // Build sign.html URL (same directory as index.html)
     const base = window.location.href.replace(/index\.html.*$/, '').replace(/\/$/, '');
-    generatedLink = `${base}/sign.html?pdfId=${fileId}&id=${uuid}`;
+    generatedLink = `${base}/sign.html?docId=${fileId}&id=${uuid}`;
 
     // Display result
     document.getElementById('generatedLinkDisplay').textContent = generatedLink;
