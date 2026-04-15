@@ -521,7 +521,7 @@
 <!-- CONFIGURATION — ZMIEŃ PONIŻSZY URL NA ADRES SWOJEGO GOOGLE APPS SCRIPT -->
 <script>
   const CONFIG = {
-    GAS_URL: 'https://script.google.com/macros/s/AKfycbxU79cMxQCJ6yh5EoZ0dRKQVJn2HGu9NOA7tix8smVzU5_NZd-wAp1FBcR7wemVzGNaJw/exec',
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbwYeTYMeHzQ4oUwzcBD1gEGm_eurrWzOLQtn-vTtDZV_-DR81qzS8Bc9eKo3JucjZQJRw/exec',
   };
 </script>
 
@@ -1026,7 +1026,7 @@
       // 3. Zapisz na Google Drive (POST do GAS)
       setStatus('st-drive', 'loading');
       try {
-        await sendToGAS(finalPdfBytes, finalFileName, formData);
+        await sendToGAS(pdfBase64, finalFileName, formData);
         setStatus('st-drive', 'ok');
         showDoneSuccess();
       } catch(driveErr) {
@@ -1094,19 +1094,13 @@
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
-  async function sendToGAS(pdfBytes, fileName, formData) {
+  async function sendToGAS(pdfBase64, fileName, formData) {
     if (CONFIG.GAS_URL === 'WSTAW_TUTAJ_URL_SWOJEGO_GOOGLE_APPS_SCRIPT') {
       throw new Error('GAS_URL nie skonfigurowany');
     }
 
-    // Convert to base64
-    let binary = '';
-    const bytes = new Uint8Array(pdfBytes);
-    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-    const base64 = btoa(binary);
-
     const payload = {
-      pdf: base64,
+      pdf: pdfBase64,
       fileName,
       contractId: CONTRACT_ID,
       clientName: `${formData.firstName} ${formData.lastName}`,
