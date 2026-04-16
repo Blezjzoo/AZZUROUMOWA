@@ -603,12 +603,20 @@
 <div id="toast"></div>
 
 <!-- PREVIEW MODAL -->
-<div id="previewModal" style="display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,0.75);flex-direction:column;">
-  <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;padding:12px 16px;border-bottom:1px solid #e0e0e0;flex-shrink:0;">
-    <span style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#1A1A2E;">📄 Podgląd umowy (tylko do odczytu)</span>
-    <button onclick="closePreview()" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#1A1A2E;">✕ Zamknij</button>
+<div id="previewModal" style="display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,0.85);flex-direction:column;">
+  <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;padding:12px 16px;border-bottom:1px solid #e0e0e0;flex-shrink:0;min-height:52px;">
+    <span style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#1A1A2E;">📄 Podgląd umowy <span style="font-weight:400;color:#6B7280;font-size:12px;">(tylko do odczytu)</span></span>
+    <button onclick="closePreview()" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#1A1A2E;flex-shrink:0;">✕ Zamknij</button>
   </div>
-  <iframe id="previewFrame" src="" style="flex:1;width:100%;border:none;" sandbox="allow-scripts allow-same-origin"></iframe>
+  <!-- Wskazówka dla użytkownika -->
+  <div style="background:#1565C0;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;padding:6px 16px;text-align:center;flex-shrink:0;">
+    Możesz przybliżać gestem dwóch palców (pinch-to-zoom) i przewijać
+  </div>
+  <!-- Wrapper scrollowalny, dopasowany do ekranu -->
+  <div id="previewFrameWrapper" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#525659;position:relative;">
+    <iframe id="previewFrame" src="" sandbox="allow-scripts allow-same-origin"
+      style="border:none;display:block;background:#fff;"></iframe>
+  </div>
 </div>
 
 <!-- TOP BAR -->
@@ -619,7 +627,7 @@
     <div class="topbar-sub">Podpisanie umowy najmu</div>
   </div>
   <button class="btn-preview" onclick="openPdfPreview()">
-    👁 Umowa
+    👁 Podgląd umowy
   </button>
 </div>
 
@@ -874,12 +882,45 @@
   // ============================================================
   function openPdfPreview() {
     if (!DOC_ID) { showToast('Brak ID dokumentu w linku', 'error'); return; }
-    document.getElementById('previewModal').style.display = 'flex';
-    document.getElementById('previewFrame').src = `https://docs.google.com/document/d/${DOC_ID}/preview`;
+
+    // Włącz pinch-to-zoom na czas podglądu
+    document.querySelector('meta[name=viewport]').setAttribute('content',
+      'width=device-width, initial-scale=1.0, user-scalable=yes');
+
+    const modal   = document.getElementById('previewModal');
+    const wrapper = document.getElementById('previewFrameWrapper');
+    const iframe  = document.getElementById('previewFrame');
+    modal.style.display = 'flex';
+
+    // Google Docs preview renderuje się na ~900px szerokości (desktop)
+    const IFRAME_W = 900;
+    const viewW    = window.innerWidth;
+    const ratio    = viewW / IFRAME_W; // np. 390/900 ≈ 0.433
+
+    // Skaluj iframe żeby wizualnie wypełnił ekran w szerokości
+    iframe.style.width           = IFRAME_W + 'px';
+    iframe.style.height          = '5000px';           // wystarczy na każdy dokument
+    iframe.style.transformOrigin = '0 0';
+    iframe.style.transform       = 'scale(' + ratio + ')';
+
+    // Wrapper musi mieć wysokość = wizualna wysokość skalowanego iframe
+    // (bo CSS transform nie zmienia layout height)
+    wrapper.style.width  = viewW + 'px';
+    // scaled visual width = IFRAME_W * ratio = viewW ✓
+    // scroll height wewnątrz wrapper = 5000 * ratio px
+    // ustawiamy minimalną wysokość wrapper żeby scroll działał
+    wrapper.style.minHeight = (5000 * ratio) + 'px';
+
+    iframe.src = 'https://docs.google.com/document/d/' + DOC_ID + '/preview';
   }
+
   function closePreview() {
+    // Przywróć blokadę zoomu po zamknięciu podglądu
+    document.querySelector('meta[name=viewport]').setAttribute('content',
+      'width=device-width, initial-scale=1.0, user-scalable=no');
     document.getElementById('previewModal').style.display = 'none';
     document.getElementById('previewFrame').src = '';
+    document.getElementById('previewFrameWrapper').style.minHeight = '';
   }
 
   // ============================================================
