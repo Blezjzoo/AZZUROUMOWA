@@ -810,10 +810,10 @@
           </div>
         </div>
         <div class="status-item pending" id="st-download">
-          <span class="status-icon">💾</span>
+          <span class="status-icon">📧</span>
           <div>
-            <div class="status-text">Pobieranie na urządzenie</div>
-            <div class="status-sub">Umowa zostanie zapisana lokalnie</div>
+            <div class="status-text">Wysyłanie na e-mail</div>
+            <div class="status-sub">Umowa i regulamin trafiają na Twoją skrzynkę</div>
           </div>
         </div>
         <div class="status-item pending" id="st-drive">
@@ -896,24 +896,32 @@
     const iframe  = document.getElementById('previewFrame');
     modal.style.display = 'flex';
 
-    // Google Docs preview renderuje się na ~900px szerokości (desktop)
     const IFRAME_W = 900;
     const viewW    = window.innerWidth;
-    const ratio    = viewW / IFRAME_W; // np. 390/900 ≈ 0.433
 
-    // Skaluj iframe żeby wizualnie wypełnił ekran w szerokości
-    iframe.style.width           = IFRAME_W + 'px';
-    iframe.style.height          = '5000px';           // wystarczy na każdy dokument
-    iframe.style.transformOrigin = '0 0';
-    iframe.style.transform       = 'scale(' + ratio + ')';
-
-    // Wrapper musi mieć wysokość = wizualna wysokość skalowanego iframe
-    // (bo CSS transform nie zmienia layout height)
-    wrapper.style.width  = viewW + 'px';
-    // scaled visual width = IFRAME_W * ratio = viewW ✓
-    // scroll height wewnątrz wrapper = 5000 * ratio px
-    // ustawiamy minimalną wysokość wrapper żeby scroll działał
-    wrapper.style.minHeight = (5000 * ratio) + 'px';
+    if (viewW < IFRAME_W) {
+      // Mobile approach (scale 5000px height iframe, scroll wrapper)
+      const ratio = viewW / IFRAME_W;
+      iframe.style.width           = IFRAME_W + 'px';
+      iframe.style.height          = '5000px'; 
+      iframe.style.transformOrigin = '0 0';
+      iframe.style.transform       = 'scale(' + ratio + ')';
+      
+      wrapper.style.width  = viewW + 'px';
+      wrapper.style.minHeight = (5000 * ratio) + 'px';
+      wrapper.style.overflow = 'auto';
+    } else {
+      // Desktop approach (100% width/height, iframe scrolls internally)
+      iframe.style.width           = '100%';
+      iframe.style.height          = '100%';
+      iframe.style.transformOrigin = 'center top';
+      iframe.style.transform       = 'none';
+      
+      wrapper.style.width  = '100%';
+      wrapper.style.height = '100%';
+      wrapper.style.minHeight = '100%';
+      wrapper.style.overflow = 'hidden'; 
+    }
 
     iframe.src = 'https://docs.google.com/document/d/' + DOC_ID + '/preview';
   }
@@ -924,7 +932,13 @@
       'width=device-width, initial-scale=1.0, user-scalable=no');
     document.getElementById('previewModal').style.display = 'none';
     document.getElementById('previewFrame').src = '';
-    document.getElementById('previewFrameWrapper').style.minHeight = '';
+    
+    // reset wrapper styles
+    const wrapper = document.getElementById('previewFrameWrapper');
+    wrapper.style.width = '';
+    wrapper.style.height = '';
+    wrapper.style.minHeight = '';
+    wrapper.style.overflow = 'auto';
   }
 
   // ============================================================
@@ -1148,10 +1162,9 @@
 
       setStatus('st-generate', 'ok');
 
-      // Pobierz lokalnie
+      // Status Wysłanie e-maila
       setStatus('st-download', 'loading');
-      downloadPdf(finalPdfBytes, finalFileName);
-      setStatus('st-download', 'ok');
+      setTimeout(() => setStatus('st-download', 'ok'), 500);
 
       // Status Drive — już obsłużony przez GAS w jednym żądaniu
       setStatus('st-drive', result.driveOk ? 'ok' : 'error');
@@ -1260,7 +1273,7 @@
     else if (state === 'loading') icon.textContent = '⏳';
     else if (state === 'error') icon.textContent = '⚠️';
     else if (id === 'st-generate') icon.textContent = '📄';
-    else if (id === 'st-download') icon.textContent = '💾';
+    else if (id === 'st-download') icon.textContent = '📧';
     else if (id === 'st-drive') icon.textContent = '☁️';
   }
 
