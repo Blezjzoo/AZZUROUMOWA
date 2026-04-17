@@ -850,6 +850,10 @@
           <span class="payment-label">Waluta</span>
           <span class="payment-value">EUR</span>
         </div>
+        <div class="payment-row">
+          <span class="payment-label">Tytuł przelewu</span>
+          <span class="payment-value" id="transferTitle">Affitto turistico</span>
+        </div>
 
         <div class="payment-label" style="margin-bottom: 8px;">Numer konta IBAN</div>
         <div class="iban-row">
@@ -1111,6 +1115,7 @@
   // ============================================================
   let finalPdfBytes = null;
   let finalFileName = '';
+  let globalRentalDate = '';
 
   async function confirmSignature() {
     if (!hasSigned) { showToast('Proszę złożyć podpis', 'error'); return; }
@@ -1125,7 +1130,9 @@
       const signatureDataUrl = canvas.toDataURL('image/png');
       const signBase64 = signatureDataUrl.split(',')[1];
 
-      finalFileName = `Umowa_${formData.lastName}_${formData.firstName}_${new Date().toISOString().slice(0,10)}.pdf`;
+      const imieNazwisko = `${formData.firstName} ${formData.lastName}`.toUpperCase();
+      const dataWynajmu = globalRentalDate || new Date().toISOString().slice(0,10);
+      finalFileName = `${imieNazwisko} - ${dataWynajmu} - PODPISANE.pdf`;
 
       // Wyślij dane do GAS — jedno żądanie: wypełnia Doc, zwraca PDF i zapisuje na Drive
       showLoading('Generowanie umowy z Twoimi danymi…');
@@ -1355,8 +1362,17 @@
       });
       if (!resp.ok) return;
       const json = await resp.json();
-      if (json.success && json.depositAmount) {
-        document.getElementById('depositAmount').textContent = json.depositAmount;
+      if (json.success) {
+        if (json.depositAmount) {
+          document.getElementById('depositAmount').textContent = json.depositAmount;
+        }
+        if (json.rentalDate) {
+          globalRentalDate = json.rentalDate;
+          const transferTitleEl = document.getElementById('transferTitle');
+          if (transferTitleEl) {
+            transferTitleEl.textContent = 'Affitto turistico ' + globalRentalDate;
+          }
+        }
       }
     } catch(e) {
       // Cicho ignoruj — kwota zostanie pobrana przy generowaniu PDF
